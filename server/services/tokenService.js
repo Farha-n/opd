@@ -37,7 +37,7 @@ class TokenService {
     });
     
     const sequence = String(count + 1).padStart(3, '0');
-    const doctorIdShort = doctorId.toString().substring(0, 6);
+    const doctorIdShort = doctorId.toString().substring(doctorId.toString().length - 6);
     
     return `TOKEN-${dateStr}-${doctorIdShort}-${sequence}`;
   }
@@ -488,4 +488,7 @@ class TokenService {
   }
 }
 
-module.exports = new TokenService();
+const tokenServiceInstance = new TokenService();
+tokenServiceInstance.PRIORITY_MAP = PRIORITY_MAP;
+
+module.exports = tokenServiceInstance;

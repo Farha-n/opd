@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const path = require('path');
 const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const Token = require('../models/Token');
 const OPDSlot = require('../models/OPDSlot');
 const tokenService = require('../services/tokenService');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 /**
  * OPD Day Simulation Script
@@ -22,10 +23,7 @@ dotenv.config();
 async function simulateOPDDay() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI);
 
     console.log('✅ Connected to MongoDB');
     console.log('\n' + '='.repeat(70));
@@ -134,7 +132,7 @@ async function simulateOPDDay() {
         name,
         email: `${name.toLowerCase().replace(' ', '.')}@patient.com`,
         password: 'password123',
-        role: 'user',
+        role: 'patient',
       });
       await user.save();
       patients.push(user);
