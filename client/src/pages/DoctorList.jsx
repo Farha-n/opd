@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { FaStethoscope, FaUserMd, FaCalendarPlus, FaSearch, FaCheck, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const DoctorList = () => {
   const [doctors, setDoctors] = useState([]);
@@ -12,6 +14,8 @@ const DoctorList = () => {
   const [profileModal, setProfileModal] = useState(null); // doctor object or null
   const [confirmModal, setConfirmModal] = useState(null); // {doctor, slot} or null
   const [search, setSearch] = useState('');
+  const [customDate, setCustomDate] = useState({});
+  const [customTime, setCustomTime] = useState({});
 
   // Move fetchDoctors outside useEffect so it can be called elsewhere
   const fetchDoctors = async () => {
@@ -49,7 +53,7 @@ const DoctorList = () => {
       setSuccess('Appointment booked!');
       toast.success('Appointment booked!');
       // Refetch doctors to update slot status
-      fetchDoctors();
+      await fetchDoctors();
     } catch (err) {
       setError(err.message);
       toast.error(err.message);
@@ -57,6 +61,13 @@ const DoctorList = () => {
       setBooking({});
       setConfirmModal(null);
     }
+  };
+
+  // Helper to check if a slot is actually booked (not just marked in availableSlots, but also not cancelled)
+  const isSlotBooked = (doc, slot) => {
+    // Find appointment for this doctor, date, and time that is not cancelled
+    // This requires appointments to be fetched or passed in; for now, rely on isBooked flag
+    return slot.isBooked;
   };
 
   const filteredDoctors = doctors.filter(doc =>
@@ -108,28 +119,55 @@ const DoctorList = () => {
                 <div className="mb-2">
                   <strong>Available Slots:</strong>
                   <ul className="list-unstyled mt-2 mb-0">
-                    {doc.availableSlots && doc.availableSlots.length > 0 ? (
-                      doc.availableSlots.map((slot, idx) => (
-                        <li key={idx} className="mb-2 d-flex align-items-center">
+                    {doc.availableSlots && doc.availableSlots.filter(slot => !isSlotBooked(doc, slot)).length > 0 ? (
+                      doc.availableSlots.filter(slot => !isSlotBooked(doc, slot)).map((slot, idx) => (
+                        <li key={idx} className="mb-2 d-flex align-items-center gap-2">
                           <span>{slot.date} - {slot.time} </span>
-                          {slot.isBooked ? (
-                            <span className="badge bg-secondary ms-2">Booked</span>
-                          ) : (
-                            <button
-                              className="btn btn-sm btn-success ms-2 animate-bounce px-3"
-                              disabled={booking[`${doc._id}-${slot.date}-${slot.time}`]}
-                              onClick={() => setConfirmModal({ doctor: doc, slot })}
-                            >
-                              <FaCalendarPlus className="me-1" />
-                              {booking[`${doc._id}-${slot.date}-${slot.time}`] ? 'Booking...' : 'Book'}
-                            </button>
-                          )}
+                          <button
+                            className="btn btn-sm btn-success animate-bounce px-3"
+                            style={{ minWidth: 90 }}
+                            disabled={booking[`${doc._id}-${slot.date}-${slot.time}`]}
+                            onClick={() => setConfirmModal({ doctor: doc, slot })}
+                          >
+                            <FaCalendarPlus className="me-1" />
+                            {booking[`${doc._id}-${slot.date}-${slot.time}`] ? 'Booking...' : 'Book'}
+                          </button>
                         </li>
                       ))
                     ) : (
-                      <li>No slots available</li>
+                      <li className="text-muted">No slots available</li>
                     )}
                   </ul>
+                </div>
+                <hr className="my-3" />
+                <div className="mb-3">
+                  <strong>Book a Custom Slot:</strong>
+                  <div className="d-flex flex-wrap align-items-center gap-2 mt-2 bg-light p-2 rounded-3 shadow-sm" style={{maxWidth:400}}>
+                    <DatePicker
+                      selected={customDate[doc._id] || null}
+                      onChange={date => setCustomDate(prev => ({ ...prev, [doc._id]: date }))}
+                      dateFormat="yyyy-MM-dd"
+                      minDate={new Date()}
+                      placeholderText="Select date"
+                      className="form-control"
+                      style={{ minWidth: 120 }}
+                    />
+                    <input
+                      type="time"
+                      className="form-control"
+                      value={customTime[doc._id] || ''}
+                      onChange={e => setCustomTime(prev => ({ ...prev, [doc._id]: e.target.value }))}
+                      style={{ maxWidth: 120, minWidth: 90 }}
+                    />
+                    <button
+                      className="btn btn-primary btn-sm fw-semibold"
+                      style={{ minWidth: 120 }}
+                      disabled={!customDate[doc._id] || !customTime[doc._id] || booking[`${doc._id}-${customDate[doc._id]?.toISOString().slice(0,10)}-${customTime[doc._id]}`]}
+                      onClick={() => setConfirmModal({ doctor: doc, slot: { date: customDate[doc._id]?.toISOString().slice(0,10), time: customTime[doc._id] } })}
+                    >
+                      <FaCalendarPlus className="me-1" />Book Custom
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-auto pt-2">
                   <Link to={`/chat/${doc.user}`} className="btn btn-outline-primary btn-sm w-100 fw-bold">

@@ -23,6 +23,11 @@ const medicalInfoRoutes = require('./routes/medicalInfo');
 const doctorDashboardRoutes = require('./routes/doctorDashboard');
 const messageRoutes = require('./routes/message');
 const userRoutes = require('./routes/user');
+const aiChatRoutes = require('./routes/aiChat');
+const tokenRoutes = require('./routes/token');
+const slotRoutes = require('./routes/slots');
+
+// Legacy routes
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -30,6 +35,11 @@ app.use('/api/medical-info', medicalInfoRoutes);
 app.use('/api/doctor-dashboard', doctorDashboardRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/ai-chat', aiChatRoutes);
+
+// OPD Token Allocation Engine Routes (API v1)
+app.use('/api/v1/tokens', tokenRoutes);
+app.use('/api/v1/slots', slotRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

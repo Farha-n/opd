@@ -23,9 +23,24 @@ const healthTips = [
 ];
 
 const mockBlogs = [
-  { title: '5 Ways to Boost Immunity', img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80', link: '#', content: 'Boost your immunity with these 5 simple steps...' },
-  { title: 'Understanding OPD Visits', img: 'https://images.unsplash.com/photo-1512070679279-c2f999098c01?auto=format&fit=crop&w=400&q=80', link: '#', content: 'Learn what to expect during your OPD visit...' },
-  { title: 'Healthy Eating for Families', img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80', link: '#', content: 'Tips for healthy eating for the whole family...' },
+  {
+    title: 'Daily Health Checklist: Simple Habits for a Longer, Healthier Life',
+    img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&w=400&q=80',
+    link: 'https://healthcare-opd.blogspot.com/2025/07/daily-health-checklist-simple-habits.html',
+    content: 'A science-backed daily checklist to boost immunity, mental clarity, and overall well-being. Includes hydration, balanced meals, movement, screen time tips, gratitude, sleep, and more.'
+  },
+  {
+    title: 'Start Your Day Right: 7 Morning Habits for Better Health',
+    img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
+    link: 'https://healthcare-opd.blogspot.com/2025/07/start-your-day-right-7-morning-habits.html',
+    content: 'Discover 7 simple morning habits to boost energy, improve focus, and support long-term wellness. Tips include waking up early, hydration, stretching, gratitude, and more.'
+  },
+  {
+    title: 'Top 10 Foods That Naturally Boost Immunity',
+    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80',
+    link: 'https://healthcare-opd.blogspot.com/2025/07/top-10-foods-that-naturally-boost.html',
+    content: 'Explore 10 everyday foods that help strengthen your immune system naturally, including citrus fruits, garlic, ginger, turmeric, nuts, yogurt, berries, and more.'
+  }
 ];
 
 const Dashboard = () => {
@@ -39,6 +54,8 @@ const Dashboard = () => {
   const [blogModal, setBlogModal] = useState(null); // blog object or null
   const [likedTips, setLikedTips] = useState([]);
   const [canceling, setCanceling] = useState({});
+  const [blogLikes, setBlogLikes] = useState(Array(mockBlogs.length).fill(0));
+  const [likedBlogs, setLikedBlogs] = useState(Array(mockBlogs.length).fill(false));
 
   useEffect(() => {
     // Fetch upcoming appointments for the user
@@ -84,6 +101,24 @@ const Dashboard = () => {
       setCanceling((prev) => ({ ...prev, [id]: false }));
       toast.success('Appointment canceled!');
     }, 1200);
+  };
+
+  const handleLikeBlog = (idx) => {
+    setLikedBlogs((prev) => {
+      const updated = [...prev];
+      updated[idx] = !updated[idx];
+      return updated;
+    });
+    setBlogLikes((prev) => {
+      const updated = [...prev];
+      updated[idx] = likedBlogs[idx] ? prev[idx] - 1 : prev[idx] + 1;
+      return updated;
+    });
+  };
+
+  const handleShareBlog = (blog) => {
+    navigator.clipboard.writeText(blog.link);
+    toast.success('Blog link copied!');
   };
 
   return (
@@ -176,16 +211,85 @@ const Dashboard = () => {
               <div className="d-flex align-items-center mb-3">
                 <FaBookOpen className="me-2 text-warning" />
                 <span className="fw-bold fs-5">Health Blog Highlights</span>
+                <div className="ms-auto">
+                  <a href="/blogs" className="btn btn-outline-info btn-sm" aria-label="View all blogs">View All Blogs</a>
+                </div>
               </div>
-              <div className="row g-2">
+              <div className="row g-3">
                 {mockBlogs.map((blog, idx) => (
-                  <div className="col-12 col-lg-4" key={idx}>
-                    <button className="card h-100 shadow-sm hover:shadow-lg transition-all duration-200 animate-pop-in text-start p-0 border-0 w-100" onClick={() => openBlogModal(blog)}>
-                      <img src={blog.img} alt={blog.title} className="card-img-top rounded-top-4" style={{height:120,objectFit:'cover'}} />
-                      <div className="card-body p-2">
-                        <div className="fw-bold text-dark" style={{fontSize:'1rem'}}>{blog.title}</div>
+                  <div className="col-12 col-md-6 col-lg-4 d-flex" key={idx}>
+                    <div
+                      className="card flex-fill h-100 shadow-sm border-0 rounded-4 position-relative blog-card animate-pop-in d-flex flex-column"
+                      tabIndex={0}
+                      style={{ minHeight: 340, background: '#f9fafb', transition: 'box-shadow 0.2s' }}
+                    >
+                      {/* Featured badge */}
+                      <span className="position-absolute top-0 end-0 m-2 badge bg-info bg-opacity-75 text-white shadow-sm" style={{zIndex:2,fontWeight:600,fontSize:'0.85rem'}}>Featured</span>
+                      {/* Blog image */}
+                      <div style={{ width: '100%', aspectRatio: '16/9', overflow: 'hidden', borderTopLeftRadius: '1rem', borderTopRightRadius: '1rem', background: '#e5e7eb' }}>
+                        <img
+                          src={blog.img}
+                          alt={`Cover for ${blog.title}`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x225?text=Health+Blog'; }}
+                        />
                       </div>
-                    </button>
+                      {/* Card body */}
+                      <div className="card-body d-flex flex-column p-3 flex-grow-1">
+                        <a
+                          href={blog.link}
+                          className="fw-bold text-dark mb-1 text-decoration-none"
+                          style={{ fontSize: '1.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`Read blog: ${blog.title}`}
+                          tabIndex={0}
+                        >
+                          {blog.title}
+                        </a>
+                        <div
+                          className="text-muted mb-2"
+                          style={{ fontSize: '0.97rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.6em' }}
+                        >
+                          {blog.content}
+                        </div>
+                        <div className="d-flex align-items-end justify-content-between mt-auto pt-2 gap-2">
+                          <div className="d-flex align-items-center gap-2">
+                            <button
+                              type="button"
+                              className="btn btn-link p-0 text-danger"
+                              aria-label={likedBlogs[idx] ? 'Unlike blog' : 'Like blog'}
+                              onClick={e => { e.preventDefault(); handleLikeBlog(idx); }}
+                              tabIndex={0}
+                              style={{ fontSize: '1.1rem' }}
+                            >
+                              {likedBlogs[idx] ? <FaHeart /> : <FaRegHeart />} <span className="ms-1" style={{fontSize:'0.95rem'}}>{blogLikes[idx]}</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-link p-0 text-primary"
+                              aria-label="Share blog"
+                              onClick={e => { e.preventDefault(); handleShareBlog(blog); }}
+                              tabIndex={0}
+                              style={{ fontSize: '1.1rem' }}
+                            >
+                              <FaCopy />
+                            </button>
+                          </div>
+                          <a
+                            href={blog.link}
+                            className="text-primary text-decoration-underline small fw-semibold ms-auto"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`Read more: ${blog.title}`}
+                            tabIndex={0}
+                            style={{ fontSize: '0.98rem' }}
+                          >
+                            Read More
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
