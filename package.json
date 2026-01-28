@@ -1,7 +1,13 @@
-{
-  "dependencies": {
-    "date-fns": "^4.1.0",
-    "react-big-calendar": "^1.19.4",
-    "react-datepicker": "^8.4.0"
-  }
+﻿{
+  "name": "opd-token-allocation-engine",
+  "version": "1.0.0",
+  "description": "Backend Intern Assignment - OPD Token Allocation Engine",
+  "private": true,
+  "scripts": {
+    "start": "node server/index.js",
+    "simulate": "node server/seed/simulateOPDDay.js",
+    "test": "echo Run tests from server folder"
+  },
+  "keywords": ["opd", "token-allocation", "hospital", "queue-management"],
+  "author": ""
 }

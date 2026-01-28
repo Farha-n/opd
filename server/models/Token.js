@@ -87,6 +87,5 @@ const tokenSchema = new mongoose.Schema({
 // Index for efficient queries
 tokenSchema.index({ doctor: 1, appointmentDate: 1, priorityLevel: -1 });
 tokenSchema.index({ patient: 1, status: 1 });
-tokenSchema.index({ tokenNumber: 1 });
 
 module.exports = mongoose.model('Token', tokenSchema);
